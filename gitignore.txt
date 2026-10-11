@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.venv/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+.runtime/
+coverage/
+test-results/
+playwright-report/
+*.log
+*.tsbuildinfo
+
+CareTrack-source.zip
