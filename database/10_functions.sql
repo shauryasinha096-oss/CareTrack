@@ -1,0 +1,29 @@
+USE caretrack;
+DELIMITER $$
+CREATE FUNCTION calculate_age(p_dob DATE) RETURNS INT
+NOT DETERMINISTIC NO SQL
+BEGIN
+  RETURN TIMESTAMPDIFF(YEAR,p_dob,DATE(UTC_TIMESTAMP()+INTERVAL 330 MINUTE));
+END$$
+CREATE FUNCTION calculate_bmi(p_height DECIMAL(6,2),p_weight DECIMAL(6,2)) RETURNS DECIMAL(7,2)
+DETERMINISTIC NO SQL
+BEGIN
+  IF p_height IS NULL OR p_weight IS NULL OR p_height<=0 OR p_weight<=0 THEN RETURN NULL; END IF;
+  RETURN ROUND(p_weight/POW(p_height/100,2),2);
+END$$
+CREATE FUNCTION patient_visit_count(p_patient INT) RETURNS INT
+NOT DETERMINISTIC READS SQL DATA
+BEGIN
+  DECLARE n INT;
+  SELECT COUNT(*) INTO n FROM visits v JOIN medical_cases c ON c.case_id=v.case_id
+  WHERE c.patient_id=p_patient AND c.record_state='SUBMITTED';
+  RETURN n;
+END$$
+CREATE FUNCTION doctor_case_count(p_doctor INT) RETURNS INT
+NOT DETERMINISTIC READS SQL DATA
+BEGIN
+  DECLARE n INT;
+  SELECT COUNT(*) INTO n FROM medical_cases WHERE doctor_id=p_doctor AND record_state='SUBMITTED';
+  RETURN n;
+END$$
+DELIMITER ;

@@ -1,0 +1,1686 @@
+[
+  {
+    "name": "users",
+    "purpose": "Application authentication and one disjoint role per account.",
+    "columns": [
+      {
+        "name": "user_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "username",
+        "type": "VARCHAR(50)",
+        "flags": [
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "email",
+        "type": "VARCHAR(254)",
+        "flags": [
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": "Login address, normalized to lowercase"
+      },
+      {
+        "name": "password_hash",
+        "type": "VARCHAR(255)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": "Encoded Argon2id hash; never plaintext"
+      },
+      {
+        "name": "role",
+        "type": "VARCHAR(20)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "flags": [
+          "NN"
+        ],
+        "default": "TRUE",
+        "note": ""
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "UTC timestamp"
+      }
+    ],
+    "checks": [
+      "role IN ('ADMIN','DOCTOR','RECEPTIONIST')",
+      "is_active IN (0,1)"
+    ],
+    "notes": "username and email are separate alternate candidate keys. Disable accounts instead of deleting referenced staff."
+  },
+  {
+    "name": "doctors",
+    "purpose": "Professional profile of a doctor-role user.",
+    "columns": [
+      {
+        "name": "doctor_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "user_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": "",
+        "target": "users.user_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "first_name",
+        "type": "VARCHAR(50)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "last_name",
+        "type": "VARCHAR(50)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "specialization",
+        "type": "VARCHAR(100)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "license_number",
+        "type": "VARCHAR(50)",
+        "flags": [
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": "Fictional demo identifier"
+      },
+      {
+        "name": "phone",
+        "type": "VARCHAR(20)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "email",
+        "type": "VARCHAR(254)",
+        "flags": [
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": "Professional contact address; distinct meaning from login email"
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "UTC timestamp"
+      }
+    ],
+    "checks": [],
+    "notes": "user_id, license_number, and professional email are alternate candidate keys. Role predicate is enforced through controlled provisioning and role-change guards, not a CHECK subquery."
+  },
+  {
+    "name": "patients",
+    "purpose": "Fictional demographic identity, independent of cases.",
+    "columns": [
+      {
+        "name": "patient_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "first_name",
+        "type": "VARCHAR(50)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "last_name",
+        "type": "VARCHAR(50)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "date_of_birth",
+        "type": "DATE",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "gender",
+        "type": "VARCHAR(20)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "blood_group",
+        "type": "VARCHAR(3)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "phone",
+        "type": "VARCHAR(20)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": "Indexed; may be shared by a household"
+      },
+      {
+        "name": "email",
+        "type": "VARCHAR(254)",
+        "flags": [
+          "UQ"
+        ],
+        "default": null,
+        "note": "Optional unique known address; NULL for absent email"
+      },
+      {
+        "name": "address",
+        "type": "VARCHAR(255)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "city",
+        "type": "VARCHAR(80)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "occupation",
+        "type": "VARCHAR(100)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "marital_status",
+        "type": "VARCHAR(20)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "emergency_contact_name",
+        "type": "VARCHAR(100)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "emergency_contact_phone",
+        "type": "VARCHAR(20)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "UTC timestamp"
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "Maintained by BEFORE UPDATE trigger; UTC"
+      }
+    ],
+    "checks": [
+      "gender IN ('FEMALE','MALE','NON_BINARY','OTHER','UNDISCLOSED')",
+      "blood_group IS NULL OR blood_group IN ('A+','A-','B+','B-','AB+','AB-','O+','O-')",
+      "marital_status IS NULL OR marital_status IN ('SINGLE','MARRIED','DIVORCED','WIDOWED','UNDISCLOSED')"
+    ],
+    "notes": "DOB no later than the clinic date is a trigger/API rule. Nullable email is not a classical candidate key. Phone and name are not identifiers; age is derived."
+  },
+  {
+    "name": "medical_cases",
+    "purpose": "A longitudinal case owned by one patient and assigned to one doctor.",
+    "columns": [
+      {
+        "name": "case_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "patient_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "patients.patient_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "doctor_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "doctors.doctor_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "case_date",
+        "type": "DATE",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "chief_complaint",
+        "type": "TEXT",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": "API explicitly supplies empty string only while draft; no server default"
+      },
+      {
+        "name": "present_illness",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "case_status",
+        "type": "VARCHAR(20)",
+        "flags": [
+          "NN"
+        ],
+        "default": "'OPEN'",
+        "note": ""
+      },
+      {
+        "name": "priority",
+        "type": "VARCHAR(10)",
+        "flags": [
+          "NN"
+        ],
+        "default": "'MEDIUM'",
+        "note": ""
+      },
+      {
+        "name": "record_state",
+        "type": "VARCHAR(10)",
+        "flags": [
+          "NN"
+        ],
+        "default": "'DRAFT'",
+        "note": "Form completion state, separate from case workflow"
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "UTC timestamp"
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "Maintained by BEFORE UPDATE trigger; UTC"
+      }
+    ],
+    "checks": [
+      "case_status IN ('OPEN','UNDER_REVIEW','FOLLOW_UP','CLOSED')",
+      "priority IN ('LOW','MEDIUM','HIGH','URGENT')",
+      "record_state IN ('DRAFT','SUBMITTED')",
+      "record_state = 'DRAFT' OR CHAR_LENGTH(TRIM(chief_complaint)) > 0",
+      "record_state <> 'DRAFT' OR case_status = 'OPEN'"
+    ],
+    "notes": "A DRAFT may have zero visits. Submitting requires at least one initial visit in the same transaction. Case doctor is current assignee; visit doctor is the actual attending doctor."
+  },
+  {
+    "name": "visits",
+    "purpose": "An individual encounter belonging to exactly one case.",
+    "columns": [
+      {
+        "name": "visit_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "case_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "medical_cases.case_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "doctor_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "doctors.doctor_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "visit_date",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "visit_type",
+        "type": "VARCHAR(25)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "chief_complaint",
+        "type": "TEXT",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": "API explicitly supplies empty string only inside a draft case; no server default"
+      },
+      {
+        "name": "doctor_notes",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "UTC timestamp"
+      }
+    ],
+    "checks": [
+      "visit_type IN ('INITIAL_CONSULTATION','FOLLOW_UP','EMERGENCY','ROUTINE_CHECKUP')"
+    ],
+    "notes": "No patient_id is duplicated: obtain it through medical_cases. Different visits may have different attending doctors. Subsequent visits are committed atomically; incomplete initial visits remain under a DRAFT case."
+  },
+  {
+    "name": "symptoms",
+    "purpose": "Reusable symptom vocabulary for fictional case observations.",
+    "columns": [
+      {
+        "name": "symptom_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "symptom_name",
+        "type": "VARCHAR(100)",
+        "flags": [
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "description",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "flags": [
+          "NN"
+        ],
+        "default": "TRUE",
+        "note": ""
+      }
+    ],
+    "checks": [
+      "is_active IN (0,1)"
+    ],
+    "notes": ""
+  },
+  {
+    "name": "case_symptoms",
+    "purpose": "One case-level symptom observation per case/symptom pair.",
+    "columns": [
+      {
+        "name": "case_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "medical_cases.case_id",
+        "delete": "CASCADE"
+      },
+      {
+        "name": "symptom_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "symptoms.symptom_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "severity",
+        "type": "VARCHAR(10)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "duration",
+        "type": "VARCHAR(80)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "frequency",
+        "type": "VARCHAR(80)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "recorded_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "Initial association timestamp; not a revision log"
+      }
+    ],
+    "checks": [
+      "severity IN ('MILD','MODERATE','SEVERE')"
+    ],
+    "notes": "Composite PK (case_id, symptom_id). Describes the case-level baseline; later visit-specific changes are documented in visit notes. It is not a structured per-visit symptom history."
+  },
+  {
+    "name": "medical_history",
+    "purpose": "Patient-level condition history, with repeat episodes allowed.",
+    "columns": [
+      {
+        "name": "history_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "patient_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "patients.patient_id",
+        "delete": "CASCADE"
+      },
+      {
+        "name": "condition_name",
+        "type": "VARCHAR(150)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "diagnosed_date",
+        "type": "DATE",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "treatment",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      }
+    ],
+    "checks": [],
+    "notes": "A condition name is not globally unique, and the same patient may have more than one episode."
+  },
+  {
+    "name": "allergies",
+    "purpose": "Patient-level fictional allergen/reaction records.",
+    "columns": [
+      {
+        "name": "allergy_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "patient_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "patients.patient_id",
+        "delete": "CASCADE"
+      },
+      {
+        "name": "allergen",
+        "type": "VARCHAR(150)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "allergy_type",
+        "type": "VARCHAR(20)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "reaction",
+        "type": "VARCHAR(255)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "severity",
+        "type": "VARCHAR(10)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      }
+    ],
+    "checks": [
+      "allergy_type IN ('MEDICATION','FOOD','ENVIRONMENTAL','OTHER')",
+      "severity IN ('MILD','MODERATE','SEVERE')"
+    ],
+    "notes": ""
+  },
+  {
+    "name": "lifestyle_history",
+    "purpose": "At most one current lifestyle snapshot per patient.",
+    "columns": [
+      {
+        "name": "lifestyle_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "patient_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": "",
+        "target": "patients.patient_id",
+        "delete": "CASCADE"
+      },
+      {
+        "name": "smoking_status",
+        "type": "VARCHAR(15)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "alcohol_status",
+        "type": "VARCHAR(15)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "exercise_frequency",
+        "type": "VARCHAR(30)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "sleep_hours",
+        "type": "DECIMAL(4,2)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "diet_type",
+        "type": "VARCHAR(30)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "occupation_notes",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "Maintained by BEFORE UPDATE trigger; UTC"
+      }
+    ],
+    "checks": [
+      "smoking_status IS NULL OR smoking_status IN ('NEVER','FORMER','CURRENT','UNDISCLOSED')",
+      "alcohol_status IS NULL OR alcohol_status IN ('NEVER','FORMER','CURRENT','UNDISCLOSED')",
+      "sleep_hours IS NULL OR sleep_hours BETWEEN 0 AND 24"
+    ],
+    "notes": "Despite the requested table name, this is the selected 0..1 current-snapshot design, not a versioned lifestyle ledger. patient_id is an alternate candidate key."
+  },
+  {
+    "name": "vital_signs",
+    "purpose": "At most one measurement set for an individual visit.",
+    "columns": [
+      {
+        "name": "vital_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "visit_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": "",
+        "target": "visits.visit_id",
+        "delete": "CASCADE"
+      },
+      {
+        "name": "temperature",
+        "type": "DECIMAL(5,2)",
+        "flags": [],
+        "default": null,
+        "note": "Degrees Celsius"
+      },
+      {
+        "name": "systolic_bp",
+        "type": "SMALLINT",
+        "flags": [],
+        "default": null,
+        "note": "mmHg"
+      },
+      {
+        "name": "diastolic_bp",
+        "type": "SMALLINT",
+        "flags": [],
+        "default": null,
+        "note": "mmHg"
+      },
+      {
+        "name": "heart_rate",
+        "type": "SMALLINT",
+        "flags": [],
+        "default": null,
+        "note": "Per minute"
+      },
+      {
+        "name": "respiratory_rate",
+        "type": "SMALLINT",
+        "flags": [],
+        "default": null,
+        "note": "Per minute"
+      },
+      {
+        "name": "oxygen_saturation",
+        "type": "DECIMAL(5,2)",
+        "flags": [],
+        "default": null,
+        "note": "Percentage"
+      },
+      {
+        "name": "height_cm",
+        "type": "DECIMAL(6,2)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "weight_kg",
+        "type": "DECIMAL(6,2)",
+        "flags": [],
+        "default": null,
+        "note": ""
+      }
+    ],
+    "checks": [
+      "temperature IS NULL OR temperature > 0",
+      "systolic_bp IS NULL OR systolic_bp > 0",
+      "diastolic_bp IS NULL OR diastolic_bp > 0",
+      "heart_rate IS NULL OR heart_rate > 0",
+      "respiratory_rate IS NULL OR respiratory_rate > 0",
+      "oxygen_saturation IS NULL OR oxygen_saturation BETWEEN 0 AND 100",
+      "height_cm IS NULL OR height_cm > 0",
+      "weight_kg IS NULL OR weight_kg > 0"
+    ],
+    "notes": "Only basic representation checks, not diagnostic thresholds. Unmeasured values are NULL. BMI is calculated from height and weight and exposed by a query/function, not stored independently. visit_id is an alternate candidate key."
+  },
+  {
+    "name": "examinations",
+    "purpose": "At most one structured examination document per visit.",
+    "columns": [
+      {
+        "name": "examination_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "visit_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": "",
+        "target": "visits.visit_id",
+        "delete": "CASCADE"
+      },
+      {
+        "name": "general_appearance",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "cardiovascular_findings",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "respiratory_findings",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "neurological_findings",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "abdominal_findings",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "skin_findings",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "other_findings",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      }
+    ],
+    "checks": [],
+    "notes": "visit_id is an alternate candidate key. No row or NULL findings mean not recorded, not normal."
+  },
+  {
+    "name": "diagnoses",
+    "purpose": "A diagnosis observation attached to a visit, not a global diagnosis catalog.",
+    "columns": [
+      {
+        "name": "diagnosis_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "visit_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "visits.visit_id",
+        "delete": "CASCADE"
+      },
+      {
+        "name": "diagnosis_name",
+        "type": "VARCHAR(150)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "diagnosis_type",
+        "type": "VARCHAR(15)",
+        "flags": [
+          "NN"
+        ],
+        "default": "'PRIMARY'",
+        "note": ""
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      }
+    ],
+    "checks": [
+      "diagnosis_type IN ('PRIMARY','SECONDARY','DIFFERENTIAL')"
+    ],
+    "notes": "Additional UNIQUE (visit_id, diagnosis_name, diagnosis_type) prevents exact duplicate labels/types within one visit and forms an alternate candidate key. Multiple co-primary labels are permitted; no unsupported one-primary-only rule is assumed.",
+    "unique_groups": [
+      [
+        "visit_id",
+        "diagnosis_name",
+        "diagnosis_type"
+      ]
+    ]
+  },
+  {
+    "name": "medicines",
+    "purpose": "Fictional catalog, one identifiable product/strength/form per row.",
+    "columns": [
+      {
+        "name": "medicine_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "medicine_code",
+        "type": "VARCHAR(40)",
+        "flags": [
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": "Stable fictional catalog code, e.g. DEMO-MED-001"
+      },
+      {
+        "name": "medicine_name",
+        "type": "VARCHAR(150)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "generic_name",
+        "type": "VARCHAR(150)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "manufacturer",
+        "type": "VARCHAR(150)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "medicine_type",
+        "type": "VARCHAR(15)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "strength",
+        "type": "VARCHAR(50)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "form",
+        "type": "VARCHAR(50)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "flags": [
+          "NN"
+        ],
+        "default": "TRUE",
+        "note": ""
+      }
+    ],
+    "checks": [
+      "medicine_type IN ('TABLET','CAPSULE','SYRUP','INJECTION','CREAM','DROPS')",
+      "is_active IN (0,1)"
+    ],
+    "notes": "medicine_code is an alternate candidate key; brand/name alone is not. medicine_type is a broad catalog category and form is a finer presentation such as coated tablet, so neither is assumed to determine the other. No automatic medicine or dosage recommendations."
+  },
+  {
+    "name": "prescriptions",
+    "purpose": "At most one fictional prescription document per visit.",
+    "columns": [
+      {
+        "name": "prescription_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "visit_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN",
+          "UQ"
+        ],
+        "default": null,
+        "note": "",
+        "target": "visits.visit_id",
+        "delete": "CASCADE"
+      },
+      {
+        "name": "doctor_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "doctors.doctor_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "prescription_date",
+        "type": "DATE",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      }
+    ],
+    "checks": [],
+    "notes": "visit_id is an alternate candidate key. doctor_id means actual author/prescriber, who can differ from attending doctor. Author must be authorized; it is not a copied visit.doctor_id."
+  },
+  {
+    "name": "prescription_medicines",
+    "purpose": "One prescription line per prescription/catalog-product pair.",
+    "columns": [
+      {
+        "name": "prescription_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "prescriptions.prescription_id",
+        "delete": "CASCADE"
+      },
+      {
+        "name": "medicine_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "medicines.medicine_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "dosage",
+        "type": "VARCHAR(100)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "frequency",
+        "type": "VARCHAR(100)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "route",
+        "type": "VARCHAR(50)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "duration_days",
+        "type": "SMALLINT",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "instructions",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      }
+    ],
+    "checks": [
+      "duration_days > 0"
+    ],
+    "notes": "Composite PK (prescription_id, medicine_id). One regimen per product in a prescription; variable/tapered repeated lines for the same product are outside this project scope."
+  },
+  {
+    "name": "appointments",
+    "purpose": "Independent scheduling record for a patient and doctor.",
+    "columns": [
+      {
+        "name": "appointment_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "patient_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "patients.patient_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "doctor_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "doctors.doctor_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "appointment_date",
+        "type": "DATE",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "start_time",
+        "type": "TIME",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "end_time",
+        "type": "TIME",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "appointment_type",
+        "type": "VARCHAR(20)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR(15)",
+        "flags": [
+          "NN"
+        ],
+        "default": "'SCHEDULED'",
+        "note": ""
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "UTC timestamp"
+      }
+    ],
+    "checks": [
+      "appointment_type IN ('CONSULTATION','FOLLOW_UP','ROUTINE_CHECKUP','EMERGENCY')",
+      "status IN ('SCHEDULED','CONFIRMED','COMPLETED','CANCELLED','NO_SHOW')",
+      "start_time >= '00:00:00' AND start_time < '24:00:00'",
+      "end_time > start_time AND end_time <= '24:00:00'"
+    ],
+    "notes": "Single fixed clinic timezone Asia/Kolkata. Half-open intervals [start_time,end_time); no overnight appointments. Overlap is a serialized transaction rule, not a row CHECK or an equality UNIQUE constraint."
+  },
+  {
+    "name": "follow_ups",
+    "purpose": "One follow-up plan originating at a particular visit.",
+    "columns": [
+      {
+        "name": "follow_up_id",
+        "type": "INT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "visit_id",
+        "type": "INT",
+        "flags": [
+          "FK",
+          "NN"
+        ],
+        "default": null,
+        "note": "",
+        "target": "visits.visit_id",
+        "delete": "RESTRICT"
+      },
+      {
+        "name": "scheduled_date",
+        "type": "DATE",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "actual_date",
+        "type": "DATE",
+        "flags": [],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR(15)",
+        "flags": [
+          "NN"
+        ],
+        "default": "'PENDING'",
+        "note": ""
+      },
+      {
+        "name": "reason",
+        "type": "VARCHAR(255)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "instructions",
+        "type": "TEXT",
+        "flags": [],
+        "default": null,
+        "note": ""
+      }
+    ],
+    "checks": [
+      "status IN ('PENDING','COMPLETED','MISSED','CANCELLED')",
+      "(status = 'COMPLETED' AND actual_date IS NOT NULL) OR (status <> 'COMPLETED' AND actual_date IS NULL)"
+    ],
+    "notes": "case_id is intentionally derived through visits, avoiding follow_up_id -> visit_id -> case_id. Several plans may originate at one visit. actual_date records completion date, not a link to the completion visit. A plan does not automatically create an appointment."
+  },
+  {
+    "name": "audit_logs",
+    "purpose": "Append-only application operation metadata with attributable actors.",
+    "columns": [
+      {
+        "name": "audit_id",
+        "type": "BIGINT",
+        "flags": [
+          "PK",
+          "NN",
+          "AI"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "user_id",
+        "type": "INT",
+        "flags": [
+          "FK"
+        ],
+        "default": null,
+        "note": "",
+        "target": "users.user_id",
+        "delete": "SET NULL"
+      },
+      {
+        "name": "actor_username",
+        "type": "VARCHAR(50)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": "Historical username snapshot, or SYSTEM/SEED"
+      },
+      {
+        "name": "action",
+        "type": "VARCHAR(20)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "entity_type",
+        "type": "VARCHAR(40)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "entity_id",
+        "type": "VARCHAR(64)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": "Canonical scalar or composite identifier"
+      },
+      {
+        "name": "description",
+        "type": "VARCHAR(500)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": ""
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": "CURRENT_TIMESTAMP(6)",
+        "note": "UTC timestamp"
+      }
+    ],
+    "checks": [
+      "action IN ('INSERT','UPDATE','DELETE','CLOSE','LOGIN','DEACTIVATE','REFRESH')"
+    ],
+    "notes": "entity_type/entity_id is a validated audit reference, deliberately not a polymorphic FK: a target may have been deleted. Do not put passwords, tokens or clinical narrative in descriptions. actor_username is event-time data, not a duplicate of the current users.username."
+  },
+  {
+    "name": "monthly_case_statistics",
+    "purpose": "Explicit derived reporting cache; not a twentieth operational entity.",
+    "columns": [
+      {
+        "name": "stat_month",
+        "type": "DATE",
+        "flags": [
+          "PK",
+          "NN"
+        ],
+        "default": null,
+        "note": "First day of the clinic calendar month"
+      },
+      {
+        "name": "total_cases",
+        "type": "INT",
+        "flags": [
+          "NN"
+        ],
+        "default": "0",
+        "note": ""
+      },
+      {
+        "name": "unique_patients",
+        "type": "INT",
+        "flags": [
+          "NN"
+        ],
+        "default": "0",
+        "note": ""
+      },
+      {
+        "name": "completed_cases",
+        "type": "INT",
+        "flags": [
+          "NN"
+        ],
+        "default": "0",
+        "note": ""
+      },
+      {
+        "name": "refreshed_at",
+        "type": "DATETIME(6)",
+        "flags": [
+          "NN"
+        ],
+        "default": null,
+        "note": "One UTC timestamp for the entire refresh batch"
+      }
+    ],
+    "checks": [
+      "DAYOFMONTH(stat_month) = 1",
+      "total_cases >= 0",
+      "unique_patients BETWEEN 0 AND total_cases",
+      "completed_cases BETWEEN 0 AND total_cases"
+    ],
+    "notes": "Required materialized-view equivalent. Count SUBMITTED cases grouped by case_date month; completed_cases means current CLOSED status within that case-date cohort, not cases closed during that month. No FK to cases; rebuildable and potentially stale."
+  }
+]

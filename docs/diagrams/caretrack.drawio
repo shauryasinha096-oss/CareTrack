@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="caretrack-phase1" name="CareTrack ERD">
+    <mxGraphModel dx="2400" dy="2000" grid="1" gridSize="10" page="0" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="CareTrack | Proposed relational model — Phase 1&#10;Fictional data only • 19 operational tables + 1 derived reporting cache&#10;PK primary key · FK foreign key · UQ unique · NN required · D delete action · U update action" style="text;html=0;align=left;verticalAlign=top;fontSize=18;fontColor=#153847;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="20" width="2200" height="100" />
+        </mxCell>
+        <mxCell id="users" value="users&#10;&#10;user_id : INT PK,NN,AI&#10;username : VARCHAR(50) NN,UQ&#10;email : VARCHAR(254) NN,UQ&#10;password_hash : VARCHAR(255) NN&#10;role : VARCHAR(20) NN&#10;is_active : BOOLEAN NN&#10;created_at : DATETIME(6) NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="160" width="350" height="258" />
+        </mxCell>
+        <mxCell id="doctors" value="doctors&#10;&#10;doctor_id : INT PK,NN,AI&#10;user_id : INT FK,NN,UQ&#10;first_name : VARCHAR(50) NN&#10;last_name : VARCHAR(50) NN&#10;specialization : VARCHAR(100) NN&#10;license_number : VARCHAR(50) NN,UQ&#10;phone : VARCHAR(20) NN&#10;email : VARCHAR(254) NN,UQ&#10;created_at : DATETIME(6) NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="510" y="160" width="350" height="306" />
+        </mxCell>
+        <mxCell id="patients" value="patients&#10;&#10;patient_id : INT PK,NN,AI&#10;first_name : VARCHAR(50) NN&#10;last_name : VARCHAR(50) NN&#10;date_of_birth : DATE NN&#10;gender : VARCHAR(20) NN&#10;blood_group : VARCHAR(3) &#10;phone : VARCHAR(20) NN&#10;email : VARCHAR(254) UQ&#10;address : VARCHAR(255) &#10;city : VARCHAR(80) &#10;occupation : VARCHAR(100) &#10;marital_status : VARCHAR(20) &#10;emergency_contact_name : VARCHAR(100) &#10;emergency_contact_phone : VARCHAR(20) &#10;created_at : DATETIME(6) NN&#10;updated_at : DATETIME(6) NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="980" y="160" width="350" height="474" />
+        </mxCell>
+        <mxCell id="medical_cases" value="medical_cases&#10;&#10;case_id : INT PK,NN,AI&#10;patient_id : INT FK,NN&#10;doctor_id : INT FK,NN&#10;case_date : DATE NN&#10;chief_complaint : TEXT NN&#10;present_illness : TEXT &#10;case_status : VARCHAR(20) NN&#10;priority : VARCHAR(10) NN&#10;record_state : VARCHAR(10) NN&#10;notes : TEXT &#10;created_at : DATETIME(6) NN&#10;updated_at : DATETIME(6) NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1450" y="160" width="350" height="378" />
+        </mxCell>
+        <mxCell id="visits" value="visits&#10;&#10;visit_id : INT PK,NN,AI&#10;case_id : INT FK,NN&#10;doctor_id : INT FK,NN&#10;visit_date : DATETIME(6) NN&#10;visit_type : VARCHAR(25) NN&#10;chief_complaint : TEXT NN&#10;doctor_notes : TEXT &#10;created_at : DATETIME(6) NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1920" y="160" width="350" height="282" />
+        </mxCell>
+        <mxCell id="symptoms" value="symptoms&#10;&#10;symptom_id : INT PK,NN,AI&#10;symptom_name : VARCHAR(100) NN,UQ&#10;description : TEXT &#10;is_active : BOOLEAN NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="814" width="350" height="186" />
+        </mxCell>
+        <mxCell id="case_symptoms" value="case_symptoms&#10;&#10;case_id : INT PK,FK,NN&#10;symptom_id : INT PK,FK,NN&#10;severity : VARCHAR(10) NN&#10;duration : VARCHAR(80) &#10;frequency : VARCHAR(80) &#10;notes : TEXT &#10;recorded_at : DATETIME(6) NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="510" y="814" width="350" height="258" />
+        </mxCell>
+        <mxCell id="medical_history" value="medical_history&#10;&#10;history_id : INT PK,NN,AI&#10;patient_id : INT FK,NN&#10;condition_name : VARCHAR(150) NN&#10;diagnosed_date : DATE &#10;treatment : TEXT &#10;notes : TEXT " style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="980" y="814" width="350" height="234" />
+        </mxCell>
+        <mxCell id="allergies" value="allergies&#10;&#10;allergy_id : INT PK,NN,AI&#10;patient_id : INT FK,NN&#10;allergen : VARCHAR(150) NN&#10;allergy_type : VARCHAR(20) NN&#10;reaction : VARCHAR(255) &#10;severity : VARCHAR(10) NN&#10;notes : TEXT " style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1450" y="814" width="350" height="258" />
+        </mxCell>
+        <mxCell id="lifestyle_history" value="lifestyle_history&#10;&#10;lifestyle_id : INT PK,NN,AI&#10;patient_id : INT FK,NN,UQ&#10;smoking_status : VARCHAR(15) &#10;alcohol_status : VARCHAR(15) &#10;exercise_frequency : VARCHAR(30) &#10;sleep_hours : DECIMAL(4,2) &#10;diet_type : VARCHAR(30) &#10;occupation_notes : TEXT &#10;updated_at : DATETIME(6) NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1920" y="814" width="350" height="306" />
+        </mxCell>
+        <mxCell id="vital_signs" value="vital_signs&#10;&#10;vital_id : INT PK,NN,AI&#10;visit_id : INT FK,NN,UQ&#10;temperature : DECIMAL(5,2) &#10;systolic_bp : SMALLINT &#10;diastolic_bp : SMALLINT &#10;heart_rate : SMALLINT &#10;respiratory_rate : SMALLINT &#10;oxygen_saturation : DECIMAL(5,2) &#10;height_cm : DECIMAL(6,2) &#10;weight_kg : DECIMAL(6,2) " style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="1300" width="350" height="330" />
+        </mxCell>
+        <mxCell id="examinations" value="examinations&#10;&#10;examination_id : INT PK,NN,AI&#10;visit_id : INT FK,NN,UQ&#10;general_appearance : TEXT &#10;cardiovascular_findings : TEXT &#10;respiratory_findings : TEXT &#10;neurological_findings : TEXT &#10;abdominal_findings : TEXT &#10;skin_findings : TEXT &#10;other_findings : TEXT " style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="510" y="1300" width="350" height="306" />
+        </mxCell>
+        <mxCell id="diagnoses" value="diagnoses&#10;&#10;diagnosis_id : INT PK,NN,AI&#10;visit_id : INT FK,NN&#10;diagnosis_name : VARCHAR(150) NN&#10;diagnosis_type : VARCHAR(15) NN&#10;notes : TEXT " style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="980" y="1300" width="350" height="210" />
+        </mxCell>
+        <mxCell id="medicines" value="medicines&#10;&#10;medicine_id : INT PK,NN,AI&#10;medicine_code : VARCHAR(40) NN,UQ&#10;medicine_name : VARCHAR(150) NN&#10;generic_name : VARCHAR(150) NN&#10;manufacturer : VARCHAR(150) NN&#10;medicine_type : VARCHAR(15) NN&#10;strength : VARCHAR(50) NN&#10;form : VARCHAR(50) NN&#10;is_active : BOOLEAN NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1450" y="1300" width="350" height="306" />
+        </mxCell>
+        <mxCell id="prescriptions" value="prescriptions&#10;&#10;prescription_id : INT PK,NN,AI&#10;visit_id : INT FK,NN,UQ&#10;doctor_id : INT FK,NN&#10;prescription_date : DATE NN&#10;notes : TEXT " style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1920" y="1300" width="350" height="210" />
+        </mxCell>
+        <mxCell id="prescription_medicines" value="prescription_medicines&#10;&#10;prescription_id : INT PK,FK,NN&#10;medicine_id : INT PK,FK,NN&#10;dosage : VARCHAR(100) NN&#10;frequency : VARCHAR(100) NN&#10;route : VARCHAR(50) NN&#10;duration_days : SMALLINT NN&#10;instructions : TEXT " style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="1810" width="350" height="258" />
+        </mxCell>
+        <mxCell id="appointments" value="appointments&#10;&#10;appointment_id : INT PK,NN,AI&#10;patient_id : INT FK,NN&#10;doctor_id : INT FK,NN&#10;appointment_date : DATE NN&#10;start_time : TIME NN&#10;end_time : TIME NN&#10;appointment_type : VARCHAR(20) NN&#10;status : VARCHAR(15) NN&#10;notes : TEXT &#10;created_at : DATETIME(6) NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="510" y="1810" width="350" height="330" />
+        </mxCell>
+        <mxCell id="follow_ups" value="follow_ups&#10;&#10;follow_up_id : INT PK,NN,AI&#10;visit_id : INT FK,NN&#10;scheduled_date : DATE NN&#10;actual_date : DATE &#10;status : VARCHAR(15) NN&#10;reason : VARCHAR(255) NN&#10;instructions : TEXT " style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="980" y="1810" width="350" height="258" />
+        </mxCell>
+        <mxCell id="audit_logs" value="audit_logs&#10;&#10;audit_id : BIGINT PK,NN,AI&#10;user_id : INT FK&#10;actor_username : VARCHAR(50) NN&#10;action : VARCHAR(20) NN&#10;entity_type : VARCHAR(40) NN&#10;entity_id : VARCHAR(64) NN&#10;description : VARCHAR(500) NN&#10;created_at : DATETIME(6) NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#e8f3f7;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1450" y="1810" width="350" height="282" />
+        </mxCell>
+        <mxCell id="monthly_case_statistics" value="monthly_case_statistics&#10;&#10;stat_month : DATE PK,NN&#10;total_cases : INT NN&#10;unique_patients : INT NN&#10;completed_cases : INT NN&#10;refreshed_at : DATETIME(6) NN" style="rounded=1;whiteSpace=wrap;html=0;align=left;verticalAlign=top;spacing=16;fontFamily=Helvetica;fontSize=12;fillColor=#fff2d6;strokeColor=#427084;fontColor=#163746;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1920" y="1810" width="350" height="210" />
+        </mxCell>
+        <mxCell id="fk-0" value="user_id&#10;parent 1 / child 0..1&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="users" target="doctors">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-1" value="patient_id&#10;parent 1 / child 0..N&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="patients" target="medical_cases">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-2" value="doctor_id&#10;parent 1 / child 0..N&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="doctors" target="medical_cases">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-3" value="case_id&#10;parent 1 / child 0..N&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="medical_cases" target="visits">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-4" value="doctor_id&#10;parent 1 / child 0..N&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="doctors" target="visits">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-5" value="case_id&#10;parent 1 / child 0..N&#10;D: CASCADE · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="medical_cases" target="case_symptoms">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-6" value="symptom_id&#10;parent 1 / child 0..N&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="symptoms" target="case_symptoms">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-7" value="patient_id&#10;parent 1 / child 0..N&#10;D: CASCADE · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="patients" target="medical_history">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-8" value="patient_id&#10;parent 1 / child 0..N&#10;D: CASCADE · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="patients" target="allergies">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-9" value="patient_id&#10;parent 1 / child 0..1&#10;D: CASCADE · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="patients" target="lifestyle_history">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-10" value="visit_id&#10;parent 1 / child 0..1&#10;D: CASCADE · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="visits" target="vital_signs">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-11" value="visit_id&#10;parent 1 / child 0..1&#10;D: CASCADE · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="visits" target="examinations">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-12" value="visit_id&#10;parent 1 / child 0..N&#10;D: CASCADE · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="visits" target="diagnoses">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-13" value="visit_id&#10;parent 1 / child 0..1&#10;D: CASCADE · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="visits" target="prescriptions">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-14" value="doctor_id&#10;parent 1 / child 0..N&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="doctors" target="prescriptions">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-15" value="prescription_id&#10;parent 1 / child 0..N&#10;D: CASCADE · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="prescriptions" target="prescription_medicines">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-16" value="medicine_id&#10;parent 1 / child 0..N&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="medicines" target="prescription_medicines">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-17" value="patient_id&#10;parent 1 / child 0..N&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="patients" target="appointments">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-18" value="doctor_id&#10;parent 1 / child 0..N&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="doctors" target="appointments">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-19" value="visit_id&#10;parent 1 / child 0..N&#10;D: RESTRICT · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="visits" target="follow_ups">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="fk-20" value="user_id&#10;parent 0..1 / child 0..N&#10;D: SET NULL · U: CASCADE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=none;startArrow=none;fontSize=10;labelBackgroundColor=#ffffff;strokeColor=#7897a4;" edge="1" parent="1" source="users" target="audit_logs">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

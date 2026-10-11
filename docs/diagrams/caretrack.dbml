@@ -1,0 +1,255 @@
+Project CareTrack {
+  database_type: 'MySQL'
+  Note: 'Phase 1 design; fictional data only. See Markdown for domain checks and transaction rules.'
+}
+
+Table users {
+  user_id int [pk, not null, increment]
+  username varchar(50) [not null, unique]
+  email varchar(254) [not null, unique, note: "Login address, normalized to lowercase"]
+  password_hash varchar(255) [not null, note: "Encoded Argon2id hash; never plaintext"]
+  role varchar(20) [not null]
+  is_active boolean [not null, default: true]
+  created_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "UTC timestamp"]
+}
+
+Table doctors {
+  doctor_id int [pk, not null, increment]
+  user_id int [not null, unique]
+  first_name varchar(50) [not null]
+  last_name varchar(50) [not null]
+  specialization varchar(100) [not null]
+  license_number varchar(50) [not null, unique, note: "Fictional demo identifier"]
+  phone varchar(20) [not null]
+  email varchar(254) [not null, unique, note: "Professional contact address; distinct meaning from login email"]
+  created_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "UTC timestamp"]
+}
+
+Table patients {
+  patient_id int [pk, not null, increment]
+  first_name varchar(50) [not null]
+  last_name varchar(50) [not null]
+  date_of_birth date [not null]
+  gender varchar(20) [not null]
+  blood_group varchar(3)
+  phone varchar(20) [not null, note: "Indexed; may be shared by a household"]
+  email varchar(254) [unique, note: "Optional unique known address; NULL for absent email"]
+  address varchar(255)
+  city varchar(80)
+  occupation varchar(100)
+  marital_status varchar(20)
+  emergency_contact_name varchar(100)
+  emergency_contact_phone varchar(20)
+  created_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "UTC timestamp"]
+  updated_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "Maintained by BEFORE UPDATE trigger; UTC"]
+}
+
+Table medical_cases {
+  case_id int [pk, not null, increment]
+  patient_id int [not null]
+  doctor_id int [not null]
+  case_date date [not null]
+  chief_complaint text [not null, note: "API explicitly supplies empty string only while draft; no server default"]
+  present_illness text
+  case_status varchar(20) [not null, default: 'OPEN']
+  priority varchar(10) [not null, default: 'MEDIUM']
+  record_state varchar(10) [not null, default: 'DRAFT', note: "Form completion state, separate from case workflow"]
+  notes text
+  created_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "UTC timestamp"]
+  updated_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "Maintained by BEFORE UPDATE trigger; UTC"]
+}
+
+Table visits {
+  visit_id int [pk, not null, increment]
+  case_id int [not null]
+  doctor_id int [not null]
+  visit_date datetime(6) [not null]
+  visit_type varchar(25) [not null]
+  chief_complaint text [not null, note: "API explicitly supplies empty string only inside a draft case; no server default"]
+  doctor_notes text
+  created_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "UTC timestamp"]
+}
+
+Table symptoms {
+  symptom_id int [pk, not null, increment]
+  symptom_name varchar(100) [not null, unique]
+  description text
+  is_active boolean [not null, default: true]
+}
+
+Table case_symptoms {
+  case_id int [not null]
+  symptom_id int [not null]
+  severity varchar(10) [not null]
+  duration varchar(80)
+  frequency varchar(80)
+  notes text
+  recorded_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "Initial association timestamp; not a revision log"]
+  indexes {
+    (case_id, symptom_id) [pk]
+  }
+}
+
+Table medical_history {
+  history_id int [pk, not null, increment]
+  patient_id int [not null]
+  condition_name varchar(150) [not null]
+  diagnosed_date date
+  treatment text
+  notes text
+}
+
+Table allergies {
+  allergy_id int [pk, not null, increment]
+  patient_id int [not null]
+  allergen varchar(150) [not null]
+  allergy_type varchar(20) [not null]
+  reaction varchar(255)
+  severity varchar(10) [not null]
+  notes text
+}
+
+Table lifestyle_history {
+  lifestyle_id int [pk, not null, increment]
+  patient_id int [not null, unique]
+  smoking_status varchar(15)
+  alcohol_status varchar(15)
+  exercise_frequency varchar(30)
+  sleep_hours decimal(4,2)
+  diet_type varchar(30)
+  occupation_notes text
+  updated_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "Maintained by BEFORE UPDATE trigger; UTC"]
+}
+
+Table vital_signs {
+  vital_id int [pk, not null, increment]
+  visit_id int [not null, unique]
+  temperature decimal(5,2) [note: "Degrees Celsius"]
+  systolic_bp smallint [note: "mmHg"]
+  diastolic_bp smallint [note: "mmHg"]
+  heart_rate smallint [note: "Per minute"]
+  respiratory_rate smallint [note: "Per minute"]
+  oxygen_saturation decimal(5,2) [note: "Percentage"]
+  height_cm decimal(6,2)
+  weight_kg decimal(6,2)
+}
+
+Table examinations {
+  examination_id int [pk, not null, increment]
+  visit_id int [not null, unique]
+  general_appearance text
+  cardiovascular_findings text
+  respiratory_findings text
+  neurological_findings text
+  abdominal_findings text
+  skin_findings text
+  other_findings text
+}
+
+Table diagnoses {
+  diagnosis_id int [pk, not null, increment]
+  visit_id int [not null]
+  diagnosis_name varchar(150) [not null]
+  diagnosis_type varchar(15) [not null, default: 'PRIMARY']
+  notes text
+  indexes {
+    (visit_id, diagnosis_name, diagnosis_type) [unique]
+  }
+}
+
+Table medicines {
+  medicine_id int [pk, not null, increment]
+  medicine_code varchar(40) [not null, unique, note: "Stable fictional catalog code, e.g. DEMO-MED-001"]
+  medicine_name varchar(150) [not null]
+  generic_name varchar(150) [not null]
+  manufacturer varchar(150) [not null]
+  medicine_type varchar(15) [not null]
+  strength varchar(50) [not null]
+  form varchar(50) [not null]
+  is_active boolean [not null, default: true]
+}
+
+Table prescriptions {
+  prescription_id int [pk, not null, increment]
+  visit_id int [not null, unique]
+  doctor_id int [not null]
+  prescription_date date [not null]
+  notes text
+}
+
+Table prescription_medicines {
+  prescription_id int [not null]
+  medicine_id int [not null]
+  dosage varchar(100) [not null]
+  frequency varchar(100) [not null]
+  route varchar(50) [not null]
+  duration_days smallint [not null]
+  instructions text
+  indexes {
+    (prescription_id, medicine_id) [pk]
+  }
+}
+
+Table appointments {
+  appointment_id int [pk, not null, increment]
+  patient_id int [not null]
+  doctor_id int [not null]
+  appointment_date date [not null]
+  start_time time [not null]
+  end_time time [not null]
+  appointment_type varchar(20) [not null]
+  status varchar(15) [not null, default: 'SCHEDULED']
+  notes text
+  created_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "UTC timestamp"]
+}
+
+Table follow_ups {
+  follow_up_id int [pk, not null, increment]
+  visit_id int [not null]
+  scheduled_date date [not null]
+  actual_date date
+  status varchar(15) [not null, default: 'PENDING']
+  reason varchar(255) [not null]
+  instructions text
+}
+
+Table audit_logs {
+  audit_id bigint [pk, not null, increment]
+  user_id int
+  actor_username varchar(50) [not null, note: "Historical username snapshot, or SYSTEM/SEED"]
+  action varchar(20) [not null]
+  entity_type varchar(40) [not null]
+  entity_id varchar(64) [not null, note: "Canonical scalar or composite identifier"]
+  description varchar(500) [not null]
+  created_at datetime(6) [not null, default: `CURRENT_TIMESTAMP(6)`, note: "UTC timestamp"]
+}
+
+Table monthly_case_statistics {
+  stat_month date [pk, not null, note: "First day of the clinic calendar month"]
+  total_cases int [not null, default: 0]
+  unique_patients int [not null, default: 0]
+  completed_cases int [not null, default: 0]
+  refreshed_at datetime(6) [not null, note: "One UTC timestamp for the entire refresh batch"]
+}
+
+Ref: users.user_id - doctors.user_id [delete: restrict, update: cascade]
+Ref: medical_cases.patient_id > patients.patient_id [delete: restrict, update: cascade]
+Ref: medical_cases.doctor_id > doctors.doctor_id [delete: restrict, update: cascade]
+Ref: visits.case_id > medical_cases.case_id [delete: restrict, update: cascade]
+Ref: visits.doctor_id > doctors.doctor_id [delete: restrict, update: cascade]
+Ref: case_symptoms.case_id > medical_cases.case_id [delete: cascade, update: cascade]
+Ref: case_symptoms.symptom_id > symptoms.symptom_id [delete: restrict, update: cascade]
+Ref: medical_history.patient_id > patients.patient_id [delete: cascade, update: cascade]
+Ref: allergies.patient_id > patients.patient_id [delete: cascade, update: cascade]
+Ref: patients.patient_id - lifestyle_history.patient_id [delete: cascade, update: cascade]
+Ref: visits.visit_id - vital_signs.visit_id [delete: cascade, update: cascade]
+Ref: visits.visit_id - examinations.visit_id [delete: cascade, update: cascade]
+Ref: diagnoses.visit_id > visits.visit_id [delete: cascade, update: cascade]
+Ref: visits.visit_id - prescriptions.visit_id [delete: cascade, update: cascade]
+Ref: prescriptions.doctor_id > doctors.doctor_id [delete: restrict, update: cascade]
+Ref: prescription_medicines.prescription_id > prescriptions.prescription_id [delete: cascade, update: cascade]
+Ref: prescription_medicines.medicine_id > medicines.medicine_id [delete: restrict, update: cascade]
+Ref: appointments.patient_id > patients.patient_id [delete: restrict, update: cascade]
+Ref: appointments.doctor_id > doctors.doctor_id [delete: restrict, update: cascade]
+Ref: follow_ups.visit_id > visits.visit_id [delete: restrict, update: cascade]
+Ref: audit_logs.user_id > users.user_id [delete: set null, update: cascade]
