@@ -10,6 +10,7 @@ import {
 import { useState, type FormEvent } from "react";
 import { useAuth } from "../services/auth";
 import { ErrorBox } from "../components/ui";
+const localDemoPassword = import.meta.env.DEV ? "CareTrackDemo2026!" : "";
 export default function Login() {
   const { login } = useAuth();
   const [email, setEmail] = useState(""),
@@ -121,8 +122,14 @@ export default function Login() {
           <div className="demo-accounts">
             <b>Explore the educational demo</b>
             <p>
-              Choose a role to fill its demo email. Password:{" "}
-              <code>CareTrackDemo2026!</code>
+              {localDemoPassword ? (
+                <>
+                  Choose a role to fill its demo email. Password:{" "}
+                  <code>{localDemoPassword}</code>
+                </>
+              ) : (
+                "Choose a role to fill its email, then enter the demo password provided by the project owner."
+              )}
             </p>
             <div>
               {[
@@ -135,7 +142,7 @@ export default function Login() {
                   key={name}
                   onClick={() => {
                     setEmail(name + "@caretrack.example.com");
-                    setPassword("CareTrackDemo2026!");
+                    setPassword(localDemoPassword);
                   }}
                 >
                   {label}

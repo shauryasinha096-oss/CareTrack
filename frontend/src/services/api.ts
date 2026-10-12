@@ -6,12 +6,16 @@ export class ApiError extends Error {
     super(message);
   }
 }
+// Full API prefix, including /api. Empty means the local Vite /api proxy.
+const apiBase = (import.meta.env.VITE_API_URL || "/api")
+  .trim()
+  .replace(/\/+$/, "");
 export const token = () => sessionStorage.getItem("caretrack.token");
 export async function api<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const res = await fetch("/api" + path, {
+  const res = await fetch(apiBase + path, {
     ...options,
     headers: {
       "Content-Type": "application/json",
