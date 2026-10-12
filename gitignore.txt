@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+.venv/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+.runtime/
+coverage/
+test-results/
+playwright-report/
+*.log
+*.tsbuildinfo
+
+CareTrack-source.zip
+
+# Cloud credentials, CA downloads and deployment bundles stay local.
+*.pem
+*.key
+certs/
+CareTrack-deployment-update.zip
