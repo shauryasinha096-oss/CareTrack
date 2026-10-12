@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+import traceback
 import pymysql
 from sqlalchemy.engine import make_url
 from dotenv import load_dotenv
@@ -17,6 +18,53 @@ from app.database.settings import DatabaseSettings, configure_session, connect_m
 
 FILES = ('02_schema.sql', '10_functions.sql', '11_procedures.sql',
          '12_triggers.sql', '09_views.sql', '13_materialized_view_equivalent.sql')
+
+
+def initialization_error(exc):
+    """Report useful diagnostics without SQL, parameters or driver messages."""
+    driver = getattr(exc, 'orig', exc)
+    args = getattr(driver, 'args', ())
+    code = args[0] if isinstance(driver, pymysql.MySQLError) and args and type(args[0]) is int else None
+    hints = {
+        1044: 'Database access denied; check the database name and schema permissions.',
+        1045: 'Database authentication rejected; check the Render database credentials.',
+        1049: 'Configured database does not exist.',
+        1054: 'A column expected by the backend is missing from the existing schema.',
+        1062: 'A unique value already exists; existing data was preserved.',
+        1064: 'MySQL rejected SQL syntax; the source location below identifies the failing step.',
+        1142: 'The database user lacks permission for this operation.',
+        1146: 'A table expected by the backend does not exist in the selected database.',
+        1227: 'MySQL rejected an operation requiring additional privileges.',
+        1305: 'A required stored procedure or function does not exist.',
+        1370: 'The database user lacks permission to execute a stored routine.',
+        1419: 'Provider policy rejected stored-object creation.',
+        1452: 'A referenced database row is missing.',
+        1644: 'A database trigger or procedure rejected the operation.',
+        2003: 'Database host or port could not be reached.',
+        2013: 'The database connection was lost.',
+        2026: 'TLS negotiation or certificate verification failed.',
+    }
+    if code is not None:
+        message = f'Initialization failed (MySQL error {code}, {type(exc).__name__}). '
+        message += hints.get(code, 'Check database compatibility and schema permissions.')
+    elif isinstance(exc, FileNotFoundError):
+        message = 'Initialization failed: a required file is missing; check DATABASE_SSL_CA and the Render Secret File.'
+    elif isinstance(exc, (ValueError, RuntimeError)):
+        # These configuration/initialization errors have controlled messages.
+        message = f'Initialization failed: {exc}'
+    else:
+        message = f'Initialization failed ({type(exc).__name__}); check configuration and database connectivity.'
+    locations = []
+    for frame, line in traceback.walk_tb(exc.__traceback__):
+        try:
+            relative = Path(frame.f_code.co_filename).resolve().relative_to(ROOT)
+        except ValueError:
+            continue
+        if relative.parts[0] in ('scripts', 'backend') and not any(part in ('.venv', 'site-packages') for part in relative.parts):
+            locations.append(f'{relative.as_posix()}:{line}')
+    if locations:
+        message += ' Source: ' + ' -> '.join(locations) + '.'
+    return message + ' Credentials, SQL and row values were not logged.'
 
 
 def connection(admin=False):
@@ -106,8 +154,8 @@ def migrate(conn=None):
                     raise RuntimeError(f'Could not install {identity[0]} {identity[1]} (MySQL error {code}); resolve schema privileges/compatibility and rerun init') from None
                 objects.add(identity)
                 installed += 1
-            print(f'{filename}: {installed} new objects installed; existing objects preserved')
-    print(f'MySQL {version}: schema initialization complete')
+            print(f'{filename}: {installed} new objects installed; existing objects preserved', flush=True)
+    print(f'MySQL {version}: schema initialization complete', flush=True)
 
 
 def initialize(seed_demo=True, local_admin=False, seed_only=False):
@@ -115,6 +163,7 @@ def initialize(seed_demo=True, local_admin=False, seed_only=False):
         if not seed_only:
             migrate(conn)
         if seed_demo:
+            print('Starting fictional account/data initialization; existing rows and passwords will be preserved.', flush=True)
             from seed import seed
             seed()  # Advisory lock remains held across the seed transaction.
 
@@ -152,9 +201,6 @@ if __name__ == '__main__':
             initialize(seed_demo=args.command != 'migrate', local_admin=args.local_admin,
                        seed_only=args.command == 'seed')
     except Exception as exc:
-        # Driver/SQLAlchemy exceptions can contain connection details or SQL values.
-        if isinstance(exc, (ValueError, RuntimeError)):
-            print(f'Initialization failed: {exc}', file=sys.stderr)
-        else:
-            print(f'Initialization failed ({type(exc).__name__}); check database connectivity, TLS certificate and schema permissions. Credentials were not logged.', file=sys.stderr)
+        print(initialization_error(exc), file=sys.stderr, flush=True)
         sys.exit(1)
+    
