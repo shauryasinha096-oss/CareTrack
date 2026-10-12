@@ -1,21 +1,15 @@
-from pathlib import Path
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from app.database.settings import DatabaseSettings
 
-ROOT = Path(__file__).resolve().parents[2]
-
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=ROOT / '.env', extra='ignore')
-    database_url: str
+class Settings(DatabaseSettings):
     jwt_secret: str = Field(min_length=32)
     jwt_expire_minutes: int = 480
-    cors_origins: list[str] = ['http://localhost:5173','http://127.0.0.1:5173']
+    cors_origins: list[str] = ['https://care-track-jet.vercel.app', 'http://localhost:5173', 'http://127.0.0.1:5173']
 
-    @field_validator('database_url')
+    @field_validator('cors_origins')
     @classmethod
-    def mysql_only(cls, value):
-        if not value.startswith('mysql+pymysql://'):
-            raise ValueError('CareTrack requires a MySQL/PyMySQL database URL')
-        return value
+    def include_production_origin(cls, origins):
+        # Existing local .env files may contain only the original local origins.
+        return list(dict.fromkeys([*origins, 'https://care-track-jet.vercel.app']))
 
 settings = Settings()

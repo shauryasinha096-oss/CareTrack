@@ -1,5 +1,4 @@
 -- CareTrack: fictional data only. MySQL 8.0.31+ / InnoDB.
-USE caretrack;
 
 CREATE TABLE `users` (
   `user_id` INT NOT NULL AUTO_INCREMENT,

@@ -3,7 +3,7 @@ from pathlib import Path
 from database import connection, statements, ROOT
 import json
 
-conn=connection(); conn.select_db('caretrack')
+conn=connection(admin=True)
 with conn.cursor() as c:
     c.execute('SET SESSION time_zone = "+00:00"')
     for filename in ('04_ddl_examples.sql','05_dml_examples.sql','06_dcl_examples.sql','07_tcl_examples.sql','08_dql_queries.sql'):
@@ -22,22 +22,23 @@ with conn.cursor() as c:
     for table,minimum in minima.items():
         c.execute(f'SELECT COUNT(*) FROM `{table}`');counts[table]=c.fetchone()[0];assert counts[table]>=minimum,(table,counts[table])
     print(json.dumps(counts,indent=2))
-    c.execute("SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema='caretrack'");assert c.fetchone()[0]==21
+    c.execute("SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=DATABASE()");assert c.fetchone()[0]==21
 conn.close()
 
 # Optional clean-room SQL seed restore. This never drops the operational schema.
 import sys
 if '--seed-import' in sys.argv:
     target='caretrack_seed_verification'
-    check=connection()
+    check=connection(admin=True)
     try:
         with check.cursor() as c:
             c.execute('SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name=%s',(target,))
             if c.fetchone()[0]: raise RuntimeError('Seed verification database already exists; inspect it before retrying.')
             c.execute(f'CREATE DATABASE `{target}` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci')
+            check.select_db(target)
             for filename in ('02_schema.sql','10_functions.sql','11_procedures.sql','12_triggers.sql','09_views.sql','13_materialized_view_equivalent.sql','03_seed_data.sql'):
                 for sql in statements(ROOT/'database'/filename):
-                    c.execute(sql.replace('USE caretrack',f'USE `{target}`'))
+                    c.execute(sql)
                     while c.nextset(): pass
             for table,minimum in minima.items():
                 c.execute(f'SELECT COUNT(*) FROM `{table}`'); actual=c.fetchone()[0]

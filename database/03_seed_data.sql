@@ -1,5 +1,4 @@
 -- Verified fictional seed. Run on an empty migrated schema with triggers installed.
-USE caretrack;
 SET @caretrack_user_id=NULL,@caretrack_system='SEED';
 START TRANSACTION;
 INSERT INTO `users` (`user_id`,`username`,`email`,`password_hash`,`role`,`is_active`,`created_at`) VALUES (1,'admin','admin@caretrack.example.com','$argon2id$v=19$m=65536,t=3,p=4$PIfAuVfGAJLpJqqdtXhrcg$wIHN5cWuqPFkFzjY657QD9rpXW5dN93kuwjv3TuNf+I','ADMIN',1,'2026-10-11 15:35:06.416427');

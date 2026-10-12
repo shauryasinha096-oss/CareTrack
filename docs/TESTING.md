@@ -69,3 +69,23 @@ The clean seed restore creates `caretrack_seed_verification` only if absent, ins
 ## Verification limits
 
 These checks cover educational functional behavior and a concrete concurrency race. They do not establish load capacity, regulatory suitability, exhaustive security, cross-browser compatibility or accessibility certification. No hosted deployment, external messaging, real patient data or medical advice is involved. No pytest failures remain; the single deprecation warning originates in Starlette's TestClient, not CareTrack logic.
+
+
+## Deployment update — 12 October 2026
+
+- **20 backend tests passed**: the original 8 API integration tests and 12 deployment tests covering TLS verification, a server refusing TLS before authentication, invalid CA files, remote plaintext rejection, special-character passwords, CORS, schema-independent SQL, and advisory-lock cleanup. One existing Starlette/AnyIO deprecation warning remains.
+- **2 additional MySQL initialization tests passed** independently against new disposable schemas on an isolated MySQL 8.4.11 instance with verified TLS and schema-only service users. One starts empty and proves full fixture initialization plus an unchanged repeat run; the other starts with an existing user at ID 901 and proves missing accounts are added without importing fixed IDs or replacing existing data. Changed passwords and disabled accounts survive reruns. No SUPER/global privileges were granted to these initializer users. The isolated server used `--skip-log-bin`; the initial test against a server with binary logging and its default creator policy correctly failed with the documented provider-policy message. No operational server global settings were changed.
+- **4 browser tests passed**: the 3 existing local workflows and a separate production preview test proving configured cross-origin API routing, browser deep-link fallback, and no production password autofill. The production browser test stubs the configured backend response; it does not claim to test a live Render service.
+- Strict TypeScript and Vite production build passed, including a build with a configured backend URL.
+- All **119 local SQL lab statements** passed again, and the schema-independent SQL schema/seed restored successfully into a fresh verification database; that temporary database was removed.
+- Aiven and Render were not contacted: service hostname, credentials, and CA certificate were not supplied. End-to-end hosted TLS, service permissions, and platform deployment remain to be checked after private dashboard configuration.
+
+The two initialization tests are intentionally skipped in the ordinary suite. They require `CARETRACK_INIT_TEST=1`, a newly provisioned empty schema whose name starts with `caretrack_deploy_test_`, and a user with the documented schema-only privileges. Run each test in a separately provisioned schema. Never point them at Aiven's operational `defaultdb` or your existing local data.
+
+For the production browser test, build the frontend with `VITE_API_URL=https://caretrack-test-api.example.com/api`, start a Vite production preview, then run:
+
+```bash
+CARETRACK_PRODUCTION_PREVIEW=http://127.0.0.1:5174 npm run test:e2e -- tests/deployment.spec.ts
+```
+
+Without `CARETRACK_PRODUCTION_PREVIEW`, the production-only browser check is skipped. Restore a normal build with your real configured API URL before publishing artifacts; Vercel always builds from source.

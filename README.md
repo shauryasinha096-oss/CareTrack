@@ -65,8 +65,7 @@ Edit `.env`: set the MySQL administrator URL, a random runtime password in `DATA
 
 ```bash
 backend/.venv/bin/python scripts/provision_database.py
-backend/.venv/bin/python scripts/database.py migrate
-backend/.venv/bin/python scripts/database.py seed
+backend/.venv/bin/python scripts/database.py init --local-admin
 cd frontend
 npm install
 npm run build
@@ -75,11 +74,15 @@ npm run dev
 
 Start the backend in another terminal with `bash scripts/start_backend.sh` from the project root. On Windows, use `backend\.venv\Scripts\python.exe` and run `python -m uvicorn app.main:app --host 127.0.0.1 --port 8000` from `backend`.
 
-Provisioning creates the `caretrack_app` loopback login without embedding passwords in SQL. Migration grants per-table runtime privileges with no DDL and no audit modification/deletion. An existing login is preserved; if you change its password, also change it in MySQL. Migration preserves existing table/routine/trigger definitions: it is an **initial installer**, not a versioned upgrade engine. Later schema changes need explicit ALTER migrations.
+Provisioning creates the `caretrack_app` loopback login without embedding passwords in SQL. Local provisioning grants per-table runtime privileges with no DDL and no audit modification/deletion. Hosted initialization never provisions users or changes grants. An existing login is preserved; if you change its password, also change it in MySQL. Migration preserves existing table/routine/trigger definitions: it is an **initial installer**, not a versioned upgrade engine. Later schema changes need explicit ALTER migrations.
 
-Seeding refuses to overwrite an existing patient dataset. It creates 150 patients, 20 doctors, 250 cases, 400 visits, 750 symptom associations, 300 diagnosis observations, 200 prescriptions, 600 product lines, 300 appointments, 150 follow-ups, 200 histories, 100 allergies, and at least 650 audit events. Dates are distributed across months, with appointments relative to the day of Python seeding. Browser tests add clearly labelled fictional demonstration records.
+Seeding preserves any existing source dataset and adds only missing fictional login accounts. The full fixture is inserted only when every source table is empty. It creates 150 patients, 20 doctors, 250 cases, 400 visits, 750 symptom associations, 300 diagnosis observations, 200 prescriptions, 600 product lines, 300 appointments, 150 follow-ups, 200 histories, 100 allergies, and at least 650 audit events. Dates are distributed across months, with appointments relative to the day of Python seeding. Browser tests add clearly labelled fictional demonstration records.
 
 Alternatively, after migration execute `database/03_seed_data.sql` in Workbench on an **empty** schema. Choose either Python seeding or SQL seeding, never both. The exported SQL snapshot uses fixed dates and precomputed Argon2id demo hashes.
+
+## Cloud deployment
+
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Vercel, Render Free, and Aiven MySQL (`defaultdb`, verified TLS), exact commands, environment variables and safe repeatable initialization. Deploy from the CareTrack repository root.
 
 ## Features
 

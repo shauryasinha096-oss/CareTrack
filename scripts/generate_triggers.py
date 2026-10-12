@@ -1,7 +1,7 @@
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-parts=['USE caretrack;','DELIMITER $$', '''CREATE PROCEDURE assert_audit_actor()
+parts=['-- Select the target database in your connection.','DELIMITER $$', '''CREATE PROCEDURE assert_audit_actor()
 BEGIN
   IF @caretrack_user_id IS NULL THEN
     IF COALESCE(@caretrack_system,'') NOT IN ('SEED','SYSTEM') THEN

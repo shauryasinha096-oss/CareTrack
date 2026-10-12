@@ -42,7 +42,7 @@ def sa_type(value):
     return name + (f'({"fsp=" if base == "DATETIME" else ""}{args})' if args else '')
 
 def generate():
-    sql = ['-- CareTrack: fictional data only. MySQL 8.0.31+ / InnoDB.', 'USE caretrack;', '']
+    sql = ['-- CareTrack: fictional data only. MySQL 8.0.31+ / InnoDB.', '-- Select the target database in your connection.', '']
     files = {}
     header = 'from sqlalchemy import Column, Integer, BigInteger, SmallInteger, String, Text, Date, Time, Numeric, Boolean, ForeignKey, CheckConstraint, UniqueConstraint, Index, text\nfrom sqlalchemy.dialects.mysql import DATETIME\nfrom app.database.base import Base\n\n'
     imports = []

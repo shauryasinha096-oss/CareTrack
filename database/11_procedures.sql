@@ -1,4 +1,3 @@
-USE caretrack;
 DELIMITER $$
 -- Caller owns transaction for these composable business procedures.
 CREATE PROCEDURE register_patient(IN p_first VARCHAR(50),IN p_last VARCHAR(50),IN p_dob DATE,

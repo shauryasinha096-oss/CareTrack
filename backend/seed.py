@@ -1,8 +1,9 @@
 """Deterministic, fictional-only data, with valid references and non-overlapping slots."""
 from datetime import datetime, timedelta, time, timezone
 import os
-from sqlalchemy import select, func, text
+from sqlalchemy import select, func, text, or_
 from app.database.connection import SessionLocal
+from app.database.settings import DatabaseSettings
 from app.models import *
 from app.schemas import clinic_today
 from app.utils.security import hash_password
@@ -12,13 +13,62 @@ LAST=['Mehta','Shah','Patel','Desai','Joshi','Trivedi','Kapoor','Rao','Verma','I
 CITIES=['Ahmedabad','Mumbai','Pune','Surat','Vadodara','Delhi','Bengaluru','Jaipur','Indore','Nashik']
 SYMPTOMS=['Headache','Fever','Cough','Fatigue','Nausea','Vomiting','Dizziness','Chest discomfort','Shortness of breath','Abdominal pain','Back pain','Joint pain','Sore throat','Runny nose','Skin rash','Weakness','Body ache','Loss of appetite','Sneezing','Congestion','Dry mouth','Itching','Muscle stiffness','Watery eyes','Restlessness','Chills','Night sweats','Hoarseness','Ear discomfort','Bloating','Indigestion','Palpitations','Sleep disturbance','Dry skin','Tingling','Eye discomfort','Neck discomfort','Swelling','Dry cough','Reduced energy']
 
+def demo_password():
+    value = os.getenv('DEMO_PASSWORD')
+    if not value and DatabaseSettings().url().host in ('localhost', '127.0.0.1', '::1'):
+        value = 'CareTrackDemo2026!'
+    if not value or len(value) < 12:
+        raise RuntimeError('Set DEMO_PASSWORD to at least 12 characters before creating hosted demo accounts')
+    return value
+
+
+def ensure_demo_accounts(db):
+    """Add missing natural-key accounts; never reset a password or change a role."""
+    encoded = None
+    created = 0
+    accounts = [('admin', 'ADMIN'), ('reception', 'RECEPTIONIST')]
+    accounts += [(f'doctor{i+1}', 'DOCTOR') for i in range(20)]
+    for username, role in accounts:
+        email = username + '@caretrack.example.com'
+        matches = db.scalars(select(User).where(or_(User.email == email, User.username == username))).all()
+        if matches:
+            if len(matches) != 1 or matches[0].email != email or matches[0].username != username or matches[0].role != role:
+                raise RuntimeError(f'Demo identity collision for {username}; existing identity preserved. Resolve manually before retrying.')
+            user = matches[0]
+        else:
+            if encoded is None:
+                encoded = hash_password(demo_password())
+            user = User(username=username, email=email, password_hash=encoded, role=role)
+            db.add(user)
+            db.flush()
+            created += 1
+        if role == 'DOCTOR' and not db.scalar(select(Doctor).where(Doctor.user_id == user.user_id)):
+            i = int(username[6:]) - 1
+            license_number = f'DEMO-LIC-{i+1:03}'
+            professional_email = f'professional.doctor{i+1}@example.com'
+            if db.scalar(select(Doctor).where(or_(Doctor.license_number == license_number, Doctor.email == professional_email))):
+                raise RuntimeError(f'Demo doctor identity collision for {username}; existing doctor preserved')
+            db.add(Doctor(user_id=user.user_id, first_name=FIRST[i], last_name=LAST[i],
+                          specialization='Educational cases', license_number=license_number,
+                          phone=f'000000{i+1:04}', email=professional_email))
+            db.flush()
+    return created
+
+
 def seed():
     today=clinic_today(); now=datetime.now(timezone.utc).replace(tzinfo=None)
     with SessionLocal() as db:
-        if db.scalar(select(func.count()).select_from(Patient)):
-            print('Seed skipped: patients already exist. Existing records were preserved.'); return
+        # Fixed IDs in the full teaching graph are safe only when EVERY source table is empty.
+        populated = any(db.scalar(select(func.count()).select_from(model))
+                        for name, model in MODELS.items()
+                        if name != 'monthly_case_statistics')
+        if populated:
+            created = ensure_demo_accounts(db)
+            db.commit()
+            print(f'Existing dataset preserved; {created} missing fictional login accounts added. Existing passwords unchanged.')
+            return
         db.execute(text("SET @caretrack_user_id=NULL, @caretrack_system='SEED'"))
-        encoded=hash_password(os.getenv('DEMO_PASSWORD','CareTrackDemo2026!'))
+        encoded=hash_password(demo_password())
         db.add_all([User(user_id=1,username='admin',email='admin@caretrack.example.com',password_hash=encoded,role='ADMIN'),User(user_id=2,username='reception',email='reception@caretrack.example.com',password_hash=encoded,role='RECEPTIONIST')]); db.flush()
         for i in range(20):
             uid=i+3
@@ -72,4 +122,10 @@ def seed():
         db.execute(text('SET @caretrack_user_id=NULL, @caretrack_system=NULL')); db.commit()
     print('Seed complete (fictional only): '+', '.join(f'{k}={v}' for k,v in counts.items()))
 
-if __name__=='__main__': seed()
+if __name__ == '__main__':
+    # Use the same cross-process initialization lock as the documented CLI.
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+    from database import initialize
+    initialize(seed_only=True)

@@ -1,0 +1,35 @@
+# Import this Blueprint from the CareTrack repository root.
+# Add aiven-ca.pem as a Render secret file before the first successful start.
+services:
+  - type: web
+    name: caretrack-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python scripts/database.py init && python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.12
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "11641"
+      - key: DB_NAME
+        value: defaultdb
+      - key: DB_USER
+        value: avnadmin
+      - key: DB_PASSWORD
+        sync: false
+      - key: DATABASE_SSL
+        value: "true"
+      - key: DATABASE_SSL_CA
+        value: /etc/secrets/aiven-ca.pem
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE_MINUTES
+        value: "480"
+      - key: DEMO_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        value: '["https://care-track-jet.vercel.app","http://localhost:5173","http://127.0.0.1:5173"]'

@@ -1,13 +1,8 @@
--- Complete initial schema installer. MySQL 8.0.31+. Empty schema only.
--- Does not seed data or provision a login. See README.md.
-
--- Source: 01_create_database.sql
-CREATE DATABASE IF NOT EXISTS caretrack CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-
+-- Complete initial schema. Select an existing database before running. Empty schema only.
+-- For repeatable, non-destructive installation use: python scripts/database.py init
 
 -- Source: 02_schema.sql
 -- CareTrack: fictional data only. MySQL 8.0.31+ / InnoDB.
-USE caretrack;
 
 CREATE TABLE `users` (
   `user_id` INT NOT NULL AUTO_INCREMENT,
@@ -354,7 +349,6 @@ CREATE TABLE `monthly_case_statistics` (
 
 
 -- Source: 10_functions.sql
-USE caretrack;
 DELIMITER $$
 CREATE FUNCTION calculate_age(p_dob DATE) RETURNS INT
 NOT DETERMINISTIC NO SQL
@@ -386,7 +380,6 @@ DELIMITER ;
 
 
 -- Source: 11_procedures.sql
-USE caretrack;
 DELIMITER $$
 -- Caller owns transaction for these composable business procedures.
 CREATE PROCEDURE register_patient(IN p_first VARCHAR(50),IN p_last VARCHAR(50),IN p_dob DATE,
@@ -440,7 +433,6 @@ DELIMITER ;
 
 
 -- Source: 12_triggers.sql
-USE caretrack;
 
 DELIMITER $$
 
@@ -577,15 +569,14 @@ DELIMITER ;
 
 
 -- Source: 09_views.sql
-USE caretrack;
-CREATE OR REPLACE VIEW patient_case_summary AS
+CREATE VIEW patient_case_summary AS
 SELECT p.patient_id, CONCAT(p.first_name,' ',p.last_name) AS patient_name,
        c.case_id,c.case_date,c.doctor_id,CONCAT(d.first_name,' ',d.last_name) AS doctor_name,
        c.chief_complaint,c.case_status,c.priority
 FROM patients p JOIN medical_cases c ON c.patient_id=p.patient_id
 JOIN doctors d ON d.doctor_id=c.doctor_id WHERE c.record_state='SUBMITTED';
 
-CREATE OR REPLACE VIEW upcoming_followups AS
+CREATE VIEW upcoming_followups AS
 SELECT f.follow_up_id,p.patient_id,CONCAT(p.first_name,' ',p.last_name) AS patient_name,
        c.doctor_id,CONCAT(d.first_name,' ',d.last_name) AS doctor_name,
        c.case_id,f.visit_id,f.scheduled_date AS follow_up_date,f.status
@@ -595,7 +586,7 @@ JOIN doctors d ON d.doctor_id=c.doctor_id
 WHERE f.status='PENDING' AND c.record_state='SUBMITTED'
 AND f.scheduled_date>=DATE(UTC_TIMESTAMP()+INTERVAL 330 MINUTE);
 
-CREATE OR REPLACE VIEW doctor_case_statistics AS
+CREATE VIEW doctor_case_statistics AS
 SELECT d.doctor_id,CONCAT(d.first_name,' ',d.last_name) AS doctor_name,
        COUNT(c.case_id) AS total_cases,
        COALESCE(SUM(c.case_status<>'CLOSED'),0) AS active_cases,
@@ -603,12 +594,11 @@ SELECT d.doctor_id,CONCAT(d.first_name,' ',d.last_name) AS doctor_name,
 FROM doctors d LEFT JOIN medical_cases c ON c.doctor_id=d.doctor_id AND c.record_state='SUBMITTED'
 GROUP BY d.doctor_id,d.first_name,d.last_name;
 
-CREATE OR REPLACE VIEW receptionist_patients AS
+CREATE VIEW receptionist_patients AS
 SELECT patient_id,first_name,last_name,date_of_birth,gender,phone,email,city FROM patients;
 
 
 -- Source: 13_materialized_view_equivalent.sql
-USE caretrack;
 -- MySQL does not provide native materialized views. This is a precomputed cache.
 DELIMITER $$
 CREATE PROCEDURE refresh_monthly_case_statistics()
@@ -618,10 +608,10 @@ BEGIN
   DECLARE EXIT HANDLER FOR SQLEXCEPTION
   BEGIN
     ROLLBACK;
-    IF acquired=1 THEN DO RELEASE_LOCK('caretrack.monthly_refresh'); END IF;
+    IF acquired=1 THEN DO RELEASE_LOCK(CONCAT(DATABASE(),'.monthly_refresh')); END IF;
     RESIGNAL;
   END;
-  SELECT GET_LOCK('caretrack.monthly_refresh',5) INTO acquired;
+  SELECT GET_LOCK(CONCAT(DATABASE(),'.monthly_refresh'),5) INTO acquired;
   IF acquired<>1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Another refresh is running'; END IF;
   START TRANSACTION;
   SET refreshed=UTC_TIMESTAMP(6);
@@ -631,7 +621,7 @@ BEGIN
          SUM(case_status='CLOSED'),refreshed
   FROM medical_cases WHERE record_state='SUBMITTED' GROUP BY CAST(DATE_FORMAT(case_date,'%Y-%m-01') AS DATE);
   COMMIT;
-  DO RELEASE_LOCK('caretrack.monthly_refresh');
+  DO RELEASE_LOCK(CONCAT(DATABASE(),'.monthly_refresh'));
 END$$
 DELIMITER ;
 -- Invoke outside another transaction: CALL refresh_monthly_case_statistics();
